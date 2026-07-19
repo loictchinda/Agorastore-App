@@ -70,3 +70,77 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   border-radius: 6px;
   font-size: 14px;
 }
+
+.page { padding: 28px 0; }
+.page-entete { display: flex; justify-content: space-between; align-items: center; }
+.etat { color: var(--gris); padding: 20px 0; }
+.retour { color: var(--navy); text-decoration: none; font-size: 14px; }
+
+.grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.carte {
+  border: 1px solid #e2e6f0;
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform .15s, box-shadow .15s;
+}
+.carte:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(30,39,97,.14); }
+.carte.inactive { opacity: .55; }
+.carte img { width: 100%; height: 150px; object-fit: cover; display: block; }
+.carte-corps { padding: 14px; }
+.carte-corps h3 { margin: 0 0 8px; font-size: 16px; }
+
+.image-vide {
+  height: 150px; display: flex; align-items: center; justify-content: center;
+  background: var(--ice); color: var(--gris); font-size: 13px;
+}
+.image-vide.grande { height: 320px; }
+
+.prix { color: var(--navy); font-weight: 700; font-size: 20px; margin: 6px 0; }
+.prix-grand { font-size: 40px; font-weight: 700; color: var(--navy); margin: 6px 0; }
+.prix-grand.flash { animation: flash .8s ease; }
+@keyframes flash { 0% { background: var(--gold); } 100% { background: transparent; } }
+
+.chrono { font-size: 13px; color: var(--gris); font-variant-numeric: tabular-nums; }
+.chrono.urgent { color: #b00020; font-weight: 700; }
+.chrono.termine { color: #b00020; }
+
+.detail { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 16px; }
+.detail-image img { width: 100%; border-radius: 10px; }
+.detail-infos h1 { margin-top: 0; color: var(--navy); }
+.description { color: var(--gris); line-height: 1.5; }
+
+.bloc-prix { background: var(--ice); padding: 16px; border-radius: 10px; margin: 18px 0; }
+.label { font-size: 12px; color: var(--gris); text-transform: uppercase; letter-spacing: .5px; }
+.bloc-chrono { margin-bottom: 18px; }
+
+.bid-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.bid-form label { flex: 1; min-width: 150px; font-size: 14px; font-weight: 600; }
+.bid-form input { width: 100%; padding: 9px; margin-top: 5px;
+  border: 1px solid #ccd; border-radius: 6px; font-size: 15px; }
+
+.info-box { background: var(--ice); padding: 12px; border-radius: 8px; font-size: 14px; color: var(--gris); }
+
+.historique { margin-top: 40px; }
+.historique ul { list-style: none; padding: 0; }
+.historique li {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 14px; border-bottom: 1px solid #eef0f6; font-size: 14px;
+}
+.historique li.meilleure { background: #fdf8e8; border-left: 3px solid var(--gold); }
+.historique li em { color: var(--gris); font-size: 12px; }
+
+.form-page.large { max-width: 520px; }
+.form-page textarea {
+  width: 100%; padding: 9px; margin-top: 5px; border: 1px solid #ccd;
+  border-radius: 6px; font-family: inherit; font-size: 15px; font-weight: normal;
+}
+
+@media (max-width: 720px) { .detail { grid-template-columns: 1fr; } }

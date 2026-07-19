@@ -65,6 +65,20 @@ La parade retenue est une **transaction SQL avec `SELECT ... FOR UPDATE`** : la 
 
 **`ProtectedRoute` est cosmétique, pas sécuritaire.** Il masque une page à un utilisateur non connecté, mais n'empêche personne d'appeler l'API directement. La seule protection réelle reste le middleware JWT côté serveur. Le front ne fait qu'éviter d'afficher une interface inutilisable.
 
+### Feature : Catalogue et enchère en direct (`feature/frontend-auctions`)
+*   Pages : liste (`/`), détail (`/auctions/:id`), création (`/auctions/new`).
+*   Composants : `AuctionCard`, `BidForm`, `CountdownTimer`. Hook `useCountdown`.
+
+**Deux appels REST plutôt qu'une route composite.** La page de détail charge l'enchère et son historique d'offres via deux requêtes parallèles (`Promise.all`). L'alternative aurait été d'enrichir `GET /api/auctions/:id` pour renvoyer les deux. Choix assumé : garder des ressources REST distinctes et ne pas modifier une API déjà stabilisée et testée, pour le coût d'un aller-retour supplémentaire — négligeable ici.
+
+**Ordre des routes.** `/auctions/new` est déclarée avant `/auctions/:id`, sinon React Router capturerait `"new"` comme un identifiant et tenterait de charger une enchère inexistante.
+
+**Nettoyage systématique des effets.** Le hook `useCountdown` renvoie un `clearInterval`, et l'effet Socket.IO de la page de détail émet `leave_room`, retire ses écouteurs et déconnecte le socket. Sans ces retours de nettoyage, naviguer entre plusieurs enchères empilerait les intervalles et les handlers : le composant réagirait aux offres d'enchères qu'on ne consulte plus, et consommerait de la mémoire à chaque visite.
+
+**Mise à jour optimiste puis rechargement.** À réception d'un `new_bid`, le prix affiché est mis à jour immédiatement depuis le payload de l'événement (retour visuel instantané), puis l'historique est rechargé via l'API — car l'événement socket ne transporte pas le `username` de l'enchérisseur. On combine la réactivité du WebSocket et la complétude de la source REST.
+
+**Validation client non bloquante.** `BidForm` vérifie que le montant dépasse le prix courant avant l'envoi, pour éviter un aller-retour inutile. Cette validation est un confort d'ergonomie : la règle qui fait autorité reste celle de la transaction SQL côté serveur, contournable depuis le client.
+
 ## 🚧 4. Journal de Bord : Défis Techniques
 *   **Défi Git :** Nettoyage d'historique complexe suite à l'inclusion de variables d'environnement. Résolu par un reset du cache global et un strict paramétrage du `.gitignore`.
 *   **Défi Node :** Erreur de routing résolue par un refactoring du scope des fonctions exportées.

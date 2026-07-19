@@ -4,17 +4,10 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AuctionList from './pages/AuctionList';
+import AuctionDetail from './pages/AuctionDetail';
+import CreateAuction from './pages/CreateAuction';
 import './App.css';
-
-// Page temporaire — remplacée par la liste des enchères à la feature suivante
-function Accueil() {
-    return (
-        <div style={{ padding: 24 }}>
-            <h1>Enchères</h1>
-            <p>Le catalogue arrive à la prochaine feature.</p>
-        </div>
-    );
-}
 
 export default function App() {
     return (
@@ -25,9 +18,14 @@ export default function App() {
                     <Routes>
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
+
                         <Route path="/" element={
-                            <ProtectedRoute><Accueil /></ProtectedRoute>
-                        } />
+                            <ProtectedRoute><AuctionList /></ProtectedRoute>} />
+                        {/* /new avant /:id : sinon "new" serait capturé comme un id */}
+                        <Route path="/auctions/new" element={
+                            <ProtectedRoute><CreateAuction /></ProtectedRoute>} />
+                        <Route path="/auctions/:id" element={
+                            <ProtectedRoute><AuctionDetail /></ProtectedRoute>} />
                     </Routes>
                 </main>
             </AuthProvider>
