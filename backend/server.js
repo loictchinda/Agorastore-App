@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const authRoutes = require('./src/routes/authRoutes');
 const auctionRoutes = require('./src/routes/auctionRoutes');
+const bidRoutes = require('./src/routes/bidRoutes');
 
 const app = express();
 app.use(cors());
@@ -39,6 +40,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // --- Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/auctions', auctionRoutes);
+app.use('/api/auctions', bidRoutes);
 
 // --- Démarrage du serveur ---
 const PORT = process.env.PORT || 3000;
