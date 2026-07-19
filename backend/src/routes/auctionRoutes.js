@@ -48,6 +48,8 @@ router.get('/', auctionController.getAllAuctions);
  *     responses:
  *       201:
  *         description: Enchère créée
+ *       400:
+ *         description: Données invalides
  *       401:
  *         description: Non autorisé (Token manquant ou invalide)
  */
@@ -62,13 +64,13 @@ router.post('/', authMiddleware, auctionController.createAuction);
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
- *         description: L'identifiant numérique de l'enchère
+ *         description: Identifiant de l'enchère
  *     responses:
  *       200:
- *         description: Détails complets de l'enchère
+ *         description: Détail de l'enchère
  *       404:
  *         description: Enchère introuvable
  */
