@@ -38,6 +38,21 @@ La parade retenue est une **transaction SQL avec `SELECT ... FOR UPDATE`** : la 
 
 **Tests :** `backend/tests/bids.test.js` — sécurité 401 (sans token / token invalide), montage des routes, absence de collision entre `/:id` et `/:id/bids`. Lancement : `npm test`.
 
+
+### Feature : Clôture automatique (`feature/close-auction`)
+*   Job périodique dans `src/jobs/closeAuctionsJob.js`, démarré depuis `server.js`.
+*   Bascule `status` de `ACTIVE` à `CLOSED` dès que `end_date` est dépassée, détermine le gagnant (offre la plus haute) et émet `auction_closed` sur la room de l'enchère.
+
+**Pourquoi un job périodique et non un `setTimeout` par enchère ?** Un timer en mémoire ne survit pas à un redémarrage : les enchères expirées pendant la coupure ne seraient jamais clôturées. Le job relit l'état réel en base à chaque passage — il est donc **idempotent et auto-réparateur**. Il ne traite que les lignes encore `ACTIVE` dont la date est passée : le repasser dix fois ne change rien au résultat.
+
+**Le job n'est pas la règle métier, c'est un rattrapage d'affichage.** La vérification qui fait autorité se trouve dans `placeBid`, à l'intérieur de la transaction : `if (end_date <= NOW())` → refus. Ainsi, même si le job passe toutes les 30 secondes, il est impossible d'enchérir sur un lot expiré pendant l'intervalle. Séparer les deux évite de faire dépendre une garantie métier de la ponctualité d'un timer.
+
+**Défensivité :** le job attrape ses propres erreurs et retourne un tableau vide plutôt que de propager. Une panne base momentanée ne doit pas faire tomber le process ; le passage suivant réessaiera. Le timer est également `unref()` pour ne pas empêcher l'arrêt propre de Node.
+
+**Limite assumée :** avec plusieurs instances de l'API, chaque instance exécuterait le job en parallèle. Pour la production, on externaliserait vers un worker dédié ou un cron système, ou on poserait un verrou applicatif (`SELECT ... FOR UPDATE` sur une table de locks).
+
+**Tests :** `backend/tests/close-auction.test.js` — exports du module, robustesse sans `io`, et timer arrêtable.
+
 ## 🚧 4. Journal de Bord : Défis Techniques
 *   **Défi Git :** Nettoyage d'historique complexe suite à l'inclusion de variables d'environnement. Résolu par un reset du cache global et un strict paramétrage du `.gitignore`.
 *   **Défi Node :** Erreur de routing résolue par un refactoring du scope des fonctions exportées.
