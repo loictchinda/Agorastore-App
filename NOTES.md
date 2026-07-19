@@ -53,6 +53,18 @@ La parade retenue est une **transaction SQL avec `SELECT ... FOR UPDATE`** : la 
 
 **Tests :** `backend/tests/close-auction.test.js` — exports du module, robustesse sans `io`, et timer arrêtable.
 
+### Feature : Fondations du frontend (`feature/frontend-setup`)
+*   React + Vite, `react-router-dom`, `axios`, `socket.io-client`.
+*   Découpage : `pages/` (une URL = une page), `components/` (réutilisable, sans URL propre), `context/` (état global), `services/` (accès réseau).
+
+**Intercepteurs Axios plutôt qu'un header répété.** Un seul intercepteur de requête injecte le JWT sur tous les appels, et un intercepteur de réponse purge la session sur un 401 puis redirige vers le login. Sans cela, il faudrait penser au header dans chaque composant — et un oubli passerait inaperçu jusqu'à ce qu'une route protégée échoue en production.
+
+**Persistance de session via `localStorage`.** Le token et l'utilisateur y sont stockés et restaurés au montage de l'`AuthProvider`, sinon un simple F5 déconnecterait l'utilisateur. Le contexte expose un état `chargement` le temps de cette restauration : sans lui, `ProtectedRoute` verrait `user === null` pendant un instant et redirigerait à tort vers `/login` à chaque rechargement.
+
+**Limite assumée de `localStorage` :** vulnérable au XSS, contrairement à un cookie `httpOnly`. Le choix est assumé pour un MVP (simplicité, pas de gestion CSRF). En production on basculerait sur un cookie `httpOnly` + `SameSite`.
+
+**`ProtectedRoute` est cosmétique, pas sécuritaire.** Il masque une page à un utilisateur non connecté, mais n'empêche personne d'appeler l'API directement. La seule protection réelle reste le middleware JWT côté serveur. Le front ne fait qu'éviter d'afficher une interface inutilisable.
+
 ## 🚧 4. Journal de Bord : Défis Techniques
 *   **Défi Git :** Nettoyage d'historique complexe suite à l'inclusion de variables d'environnement. Résolu par un reset du cache global et un strict paramétrage du `.gitignore`.
 *   **Défi Node :** Erreur de routing résolue par un refactoring du scope des fonctions exportées.
