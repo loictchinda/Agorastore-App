@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Agorastore — Démo temps réel</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 620px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        .prix {
+            font-size: 44px;
+            font-weight: bold;
+            color: #1E2761;
+            margin: 12px 0;
+        }
+
+        .flash {
+            animation: flash 1s ease;
+        }
+
+        @keyframes flash {
+            0% {
+                background: #C9A227;
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+
+        input,
+        button {
+            padding: 8px 12px;
+            font-size: 15px;
+        }
+
+        #log {
+            margin-top: 24px;
+            font-size: 13px;
+            color: #555;
+            border-top: 1px solid #ddd;
+            padding-top: 12px;
+        }
+
+        #log div {
+            padding: 2px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Enchère #<span id="auctionId">1</span> — suivi temps réel</h1>
+
+    <label>ID de l'enchère : <input id="idInput" type="number" value="1" style="width:70px"></label>
+    <button onclick="rejoindre()">Rejoindre</button>
+
+    <div class="prix" id="prix">—</div>
+    <div id="statut">Non connecté</div>
+
+    <div id="log"></div>
+
+    <script>
+        const socket = io();
+        let roomActuelle = null;
+
+        function log(msg) {
+            const d = document.createElement('div');
+            d.textContent = new Date().toLocaleTimeString() + ' — ' + msg;
+            document.getElementById('log').prepend(d);
+        }
+
+        socket.on('connect', () => {
+            document.getElementById('statut').textContent = 'Connecté (' + socket.id + ')';
+            log('Connexion établie');
+        });
+
+        socket.on('joined_room', (data) => log('Abonné à ' + data.room));
+
+        // L'événement émis par le backend après chaque offre validée
+        socket.on('new_bid', (data) => {
+            const el = document.getElementById('prix');
+            el.textContent = Number(data.amount).toFixed(2) + ' €';
+            el.classList.remove('flash');
+            void el.offsetWidth;          // force le redémarrage de l'animation
+            el.classList.add('flash');
+            log('Nouvelle offre : ' + data.amount + ' € (user ' + data.bidder_id + ')');
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('statut').textContent = 'Déconnecté';
+            log('Connexion perdue');
+        });
+
+        function rejoindre() {
+            const id = document.getElementById('idInput').value;
+            if (roomActuelle) socket.emit('leave_room', roomActuelle);
+            socket.emit('join_room', id);
+            roomActuelle = id;
+            document.getElementById('auctionId').textContent = id;
+
+            // On charge le prix courant via l'API REST : le WebSocket ne transmet
+            // que les changements, il faut un état initial.
+            fetch('/api/auctions/' + id)
+                .then(r => r.json())
+                .then(a => {
+                    document.getElementById('prix').textContent =
+                        a.current_price ? Number(a.current_price).toFixed(2) + ' €' : '—';
+                })
+                .catch(() => log('Impossible de charger l\'enchère'));
+        }
+
+        rejoindre();
+    </script>
+</body>
+
+</html>
