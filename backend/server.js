@@ -5,6 +5,7 @@ const swaggerJsDoc = require('swagger-jsdoc');
 require('dotenv').config();
 
 const authRoutes = require('./src/routes/authRoutes');
+const auctionRoutes = require('./src/routes/auctionRoutes');
 
 const app = express();
 app.use(cors());
@@ -20,6 +21,15 @@ const swaggerOptions = {
             description: 'API de la plateforme d\'enchères en temps réel',
         },
         servers: [{ url: `http://localhost:${process.env.PORT || 3000}` }],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                }
+            }
+        }
     },
     apis: ['./src/routes/*.js'], // Emplacement des annotations Swagger
 };
@@ -28,6 +38,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // --- Routes ---
 app.use('/api/auth', authRoutes);
+app.use('/api/auctions', auctionRoutes);
 
 // --- Démarrage du serveur ---
 const PORT = process.env.PORT || 3000;
