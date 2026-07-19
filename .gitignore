@@ -3,7 +3,17 @@ node_modules/
 backend/node_modules/
 frontend/node_modules/
 
+<<<<<<< HEAD
 # Variables d'environnement
 .env
 backend/.env
 frontend/.env
+=======
+# Fichiers d'environnement (Mots de passe BDD, JWT secrets)
+.env
+backend/.env
+frontend/.env
+
+# Fichiers logs
+*.log
+>>>>>>> feature/auth
