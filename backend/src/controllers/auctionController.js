@@ -33,3 +33,23 @@ exports.createAuction = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la création de l'enchère." });
     }
 };
+
+// --- 3. CONSULTER UNE ENCHÈRE SPÉCIFIQUE ---
+exports.getAuctionById = async (req, res) => {
+    try {
+        const auctionId = req.params.id;
+
+        const [auctions] = await pool.query('SELECT * FROM Auctions WHERE id = ?', [auctionId]);
+
+        // Si le tableau est vide, c'est que l'enchère n'existe pas
+        if (auctions.length === 0) {
+            return res.status(404).json({ message: "Enchère introuvable." });
+        }
+
+        // On retourne le premier (et unique) résultat
+        res.status(200).json(auctions[0]);
+    } catch (error) {
+        console.error("Erreur getAuctionById:", error);
+        res.status(500).json({ message: "Erreur lors de la récupération de l'enchère." });
+    }
+};

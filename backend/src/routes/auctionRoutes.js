@@ -53,4 +53,25 @@ router.get('/', auctionController.getAllAuctions);
  */
 router.post('/', authMiddleware, auctionController.createAuction);
 
+/**
+ * @swagger
+ * /api/auctions/{id}:
+ *   get:
+ *     summary: Récupérer les détails d'une enchère spécifique
+ *     tags: [Auctions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: L'identifiant numérique de l'enchère
+ *     responses:
+ *       200:
+ *         description: Détails complets de l'enchère
+ *       404:
+ *         description: Enchère introuvable
+ */
+router.get('/:id', auctionController.getAuctionById);
+
 module.exports = router;
